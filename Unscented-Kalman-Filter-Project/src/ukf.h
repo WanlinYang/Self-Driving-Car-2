@@ -71,6 +71,14 @@ public:
 
   double NIS_radar_;
 
+  // noise of predict model
+  MatrixXd Q_;
+
+  // measurement noise of lidar
+  MatrixXd R_laser_;
+
+  // measurement noise of radar
+  MatrixXd R_radar_;
 
   /**
    * Constructor

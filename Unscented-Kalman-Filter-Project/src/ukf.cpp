@@ -71,12 +71,33 @@ UKF::UKF() {
   // predicted sigma points matrix
   Xsig_pred_ = MatrixXd(n_x_, 2*n_aug_+1);
 
-  // weights of sigma points
-  weights_ = VectorXd(2*n_aug_+1);
-
   NIS_laser_ = 0.0;
 
   NIS_radar_ = 0.0;
+
+  // noise of predict model
+  Q_ = MatrixXd(2, 2);
+  Q_ << std_a_*std_a, 0,
+     0, std_yawdd_*std_yawdd_;
+
+  // weights of sigma points
+  weights_ = VectorXd(2*n_aug_+1);
+  // set weights
+  weights_(0) = lambda_/(lambda_+n_aug_);
+  for(int i=1; i<2*n_aug_+1; i++){
+    weights_(i) = 0.5/(lambda_+n_aug_);
+  }
+
+  // measurement noise of lidar
+  R_laser_ = MatrixXd(2, 2);
+  R_laser_ << std_laspx_*std_laspx_, 0,
+           0, std_laspy_*std_laspy_;
+
+  // measurement noise of radar
+  R_radar_ = MatrixXd(3, 3);
+  R_radar_ << std_radr_*std_radr_, 0, 0,
+           0, std_radphi_*std_radphi_, 0,
+           0, 0, std_radrd_*std_radrd_;
 
 }
 
@@ -171,8 +192,7 @@ void UKF::Prediction(double delta_t) {
   // create augmented covariance matrix
   MatrixXd P_aug = MatrixXd::Zero(n_aug_, n_aug_);
   P_aug.topLeftCorner(n_x_,n_x_) = P_;
-  P_aug(5,5) = std_a_*std_a_;
-  P_aug(6,6) = std_yawdd_*std_yawdd_;
+  P_aug.bottomRightCorner(2, 2) = Q_;
 
   // create square root matrix
   MatrixXd L = P_aug.llt().matrixL();
@@ -227,11 +247,6 @@ void UKF::Prediction(double delta_t) {
     Xsig_pred_(4,i) = yawd_p;
   }
 
-  // set weights
-  weights_(0) = lambda_/(lambda_+n_aug_);
-  for(int i=1; i<2*n_aug_+1; i++){
-    weights_(i) = 0.5/(lambda_+n_aug_);
-  }
 
   // predicted state mean
   x_.fill(0.0);
@@ -273,15 +288,11 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   MatrixXd H(2, 5);
   H << 1, 0, 0, 0, 0,
     0, 1, 0, 0, 0;
-  // Measurement noise
-  MatrixXd R(2, 2);
-  R << std_laspx_*std_laspx_, 0,
-          0, std_laspy_*std_laspy_;
   // 5x5 indentity matrix
   MatrixXd I = MatrixXd::Identity(5, 5);
 
   VectorXd y = z - H*x_;
-  MatrixXd S = H*P_*H.transpose() + R;
+  MatrixXd S = H*P_*H.transpose() + R_laser_;
   MatrixXd K = P_*H.transpose()*S.inverse();
 
   NIS_laser_ = y.transpose()*S.inverse()*y;
@@ -353,11 +364,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   }
 
   // add measurement noise
-  MatrixXd R(3, 3);
-  R << std_radr_*std_radr_, 0, 0,
-    0, std_radphi_*std_radphi_, 0,
-    0, 0, std_radrd_*std_radrd_;
-  S += R;
+  S += R_radar_;
 
   MatrixXd K = Tc * S.inverse();
   VectorXd z_diff = z - z_pred;

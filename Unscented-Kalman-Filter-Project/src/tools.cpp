@@ -21,8 +21,7 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
   }
 
   // initialize rmse as zero vector
-  int dim = ground_truth.size();
-  VectorXd rmse = VectorXd::Zero(dim);
+  VectorXd rmse = VectorXd::Zero(4);
 
   // accumulate squared residuals
   for(unsigned int i=0; i<estimations.size(); i++){
