@@ -32,7 +32,7 @@ from the simulator.
 
 ## Models
 
-The motion model is Constant Turn Rate and Velocity Magnitude (CTRV) Model. The first prediction step is made by applying sigma points over the nonlinear model. In the second update step, I used Kalman Filter based on linear model for lidar, and Unscented Kalman Filter based on CTRV model for radar.
+The motion model is Constant Turn Rate and Velocity Magnitude (CTRV) Model. The first prediction step is made by applying sigma points over the nonlinear model. In the second update step, lidar data is updated by Kalman Filter (linear), and radar data by Unscented Kalman Filter (nonlinear).
 
 ## Running Results in Simulator
 
