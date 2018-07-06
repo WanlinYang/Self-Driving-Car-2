@@ -38,9 +38,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
   normal_distribution<double> dist_y(y, std_y);
   normal_distribution<double> dist_theta(theta, std_theta);
 
-  particles.resize(num_particles);
-  weights.resize(num_particles);
-  double init_weight = 1.0/num_particles;
+  double init_weight = 1.0;
 
   for(int i=0; i<num_particles; i++){
     double sample_x = dist_x(gen);
@@ -54,7 +52,8 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
     part.theta = sample_theta;
     part.weight = init_weight;
 
-    particles[i] = part;
+    particles.push_back(part);
+    weights.push_back(init_weight);
   }
 
   is_initialized = true;
@@ -179,31 +178,15 @@ void ParticleFilter::resample() {
   // NOTE: You may find std::discrete_distribution helpful here.
   //   http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
 
-  srand(time(NULL));
-  int index = rand() % num_particles;
-  double beta = 0.0;
-  double max_weight = numeric_limits<double>::min();
-
-  for(int i=0; i<num_particles; i++){
-    max_weight = max(max_weight, weights[i]);
-  }
-
-  vector<double> resample_weights(num_particles);
   vector<Particle> new_particles(num_particles);
+  default_random_engine gen;
 
   for(int i=0; i<num_particles; i++){
-    beta = ((double) rand() / RAND_MAX) * 2.0 * max_weight;
-    while(weights[index] < beta){
-      beta -= weights[index];
-      index = (index+1) % num_particles;
-    }
-    resample_weights[i] = weights[index];
-    new_particles[i] = particles[index];
+    discrete_distribution<int> index(weights.begin(), weights.end());
+    new_particles[i] = particles[index(gen)];
   }
 
-  weights = resample_weights;
   particles = new_particles;
-
 }
 
 Particle ParticleFilter::SetAssociations(Particle& particle, const std::vector<int>& associations,
