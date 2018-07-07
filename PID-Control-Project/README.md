@@ -3,6 +3,18 @@ Self-Driving Car Engineer Nanodegree Program
 
 ---
 
+## PID Components
+
+### 1. Effect of P, I, D
+
+A PID controller lets the system move along the reference track. The proportional gain makes the system's movement proportional to the error. But only P control will let the system oscillate a lot. So we introduced a derivative term. The D control output is proportional to the error changing rate, so it forces the error changing rate smaller. Only PD control is not enough for a long-term control. So an integral term can push the system to zero-error as the error accumulates.
+
+### 2. P, I, D Coefficients
+
+I have some experience of tuning PID gains in a [motor control project](https://github.com/WanlinYang/Motor-Control), so I am familiar of setting resonable PID values. The P-value can be tuned by observing the performance of the system. If the feedback is too weak, we can increase the P-value, and decrease it when the error cannot converge to zero. The D-value can be much larger than P-value, and I-value should be much less than the P-value.
+
+Another way to protect the system from unstable is to add an anti-windup term into the controller. When the absolute value of the error integral reaches a threshold, we can make the error equal to the threshold and wait the error integral move below the threshold again. In this project, I set the thereshold as 0.5. After tuning several times, my controller seems good in the simulation.
+
 ## Dependencies
 
 * cmake >= 3.5
