@@ -1,7 +1,5 @@
-# CarND-Controls-MPC
-Self-Driving Car Engineer Nanodegree Program
+# Model Predictive Control
 
----
 ## MPC Model
 
 ### Model description
