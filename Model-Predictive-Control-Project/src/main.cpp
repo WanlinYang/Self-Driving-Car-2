@@ -11,6 +11,8 @@
 
 // for convenience
 using json = nlohmann::json;
+double DT = 0.1;
+double LF = 2.67;
 
 // For converting back and forth between radians and degrees.
 constexpr double pi() { return M_PI; }
@@ -91,7 +93,8 @@ int main() {
           double py = j[1]["y"];
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
-
+          double delta = j[1]["steering_angle"];
+          double throttle = j[1]["throttle"];
           /*
           * TODO: Calculate steering angle and throttle using MPC.
           *
@@ -119,8 +122,16 @@ int main() {
           double cte = polyeval(coeffs, 0);
           double epsi = -atan(coeffs[1]);
 
+          // Make prediction with kinematic model
+          double px_act = v * DT;
+          double py_act = 0;
+          double psi_act = -v*delta*DT / LF;
+          double v_act = v + throttle*DT;
+          double cte_act = cte + v*sin(epsi)*DT;
+          double epsi_act = epsi + psi_act;
+
           Eigen::VectorXd state(6);
-          state << 0, 0, 0, v, cte, epsi;
+          state << px_act, py_act, psi_act, v_act, cte_act, epsi_act;
           auto vars = mpc.Solve(state, coeffs);
 
           double steer_value = vars[0];

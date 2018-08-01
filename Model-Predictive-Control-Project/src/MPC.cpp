@@ -9,7 +9,7 @@ using CppAD::AD;
 int N = 10;
 double dt = 0.1;
 
-double v_ref = 30.0;
+double v_ref = 50.0;
 int x_start = 0;
 int y_start = N;
 int psi_start = 2*N;
